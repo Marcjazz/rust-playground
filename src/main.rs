@@ -60,11 +60,14 @@ fn guess_game() {
     }
 }
 
+#[derive(Debug)]
 enum TriangleCategory {
     Equilateral,
     Isosceles(u32, u32), //(eq, uneq)
     Scalene,
 }
+
+#[derive(Debug)]
 struct Triangle {
     sides: (u32, u32, u32),
     category: TriangleCategory,
@@ -84,10 +87,7 @@ fn geometry() {
     read_input_sides(&mut triangle);
     set_cat(&mut triangle);
     let triangle_area = get_area(&triangle);
-    println!(
-        "{}",
-        format!("Your triangle is {:?}", triangle.sides).blue()
-    );
+    println!("{}", format!("Your {:?}", triangle).blue());
     println!(
         "{}",
         format!("Your triangle area is {}", triangle_area).blue()
@@ -104,7 +104,7 @@ fn geometry() {
                 let semi_perimeter = (get_perimeter(&triangle) as f64).div(2.0);
                 println!(
                     "{}",
-                    format!("Your triangle perimeter is {}", semi_perimeter*2.0).blue()
+                    format!("Your triangle perimeter is {}", semi_perimeter * 2.0).blue()
                 );
                 (semi_perimeter
                     .mul(semi_perimeter.sub(a as f64))
