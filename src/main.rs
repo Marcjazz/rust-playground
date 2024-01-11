@@ -68,10 +68,7 @@ enum TriangleCategory {
 }
 
 #[derive(Debug)]
-struct Triangle {
-    sides: (u32, u32, u32),
-    category: TriangleCategory,
-}
+struct Triangle(u32, u32, u32);
 
 fn geometry() {
     println!(
@@ -80,49 +77,58 @@ fn geometry() {
         \n Enter your triangle's sides length and know what type of triangle you got"
             .cyan()
     );
-    let mut triangle = Triangle {
-        category: TriangleCategory::Scalene,
-        sides: (0, 0, 0),
-    };
-    read_input_sides(&mut triangle);
-    set_cat(&mut triangle);
+    let triangle = read_input_sides();
     let triangle_area = get_area(&triangle);
-    println!("{}", format!("Your {:?}", triangle).blue());
     println!(
         "{}",
-        format!("Your triangle area is {}", triangle_area).blue()
+        format!(
+            "Your geometry figure is {:?}, Area: {}, Type: {:?}",
+            triangle,
+            triangle_area,
+            get_cat(&triangle)
+        )
+        .blue()
     );
 
     fn get_area(triangle: &Triangle) -> f64 {
-        let (a, b, c) = triangle.sides;
-        match triangle.category {
+        let Triangle(a, b, c) = triangle;
+        let category = get_cat(triangle);
+        match category {
             TriangleCategory::Equilateral => 3.0_f64.sqrt().div(4.0).mul((a.pow(2)) as f64),
             TriangleCategory::Isosceles(eq, uneq) => {
-                0.25.mul(((4 * eq.pow(2)).sub(uneq.pow(2))) as f64)
+                let ar = (4 * (eq as i32).pow(2)).sub((uneq as i32).pow(2)) as f64;
+                if ar <= 0.0 {
+                    println!("{}", format!("It's not possible to form a valid triangle with the given side lengths {:?}", triangle).red());
+                    return 0.0;
+                }
+                0.25.mul(ar.sqrt())
             }
             TriangleCategory::Scalene => {
-                let semi_perimeter = (get_perimeter(&triangle) as f64).div(2.0);
+                let sp = (get_perimeter(&triangle) as f64).div(2.0);
                 println!(
                     "{}",
-                    format!("Your triangle perimeter is {}", semi_perimeter * 2.0).blue()
+                    format!("Your triangle perimeter is {}", sp * 2.0).blue()
                 );
-                (semi_perimeter
-                    .mul(semi_perimeter.sub(a as f64))
-                    .mul(semi_perimeter.sub(b as f64))
-                    .mul(semi_perimeter.sub(c as f64)))
+                if sp <= *a as f64 || sp <= *b as f64 || sp <= *c as f64 {
+                    println!("{}", format!("it's not possible to form a valid triangle with the given side lengths {:?}", triangle).red());
+                    return 0.0;
+                }
+                (sp.mul(sp.sub(*a as f64))
+                    .mul(sp.sub(*b as f64))
+                    .mul(sp.sub(*c as f64)))
                 .sqrt()
             }
         }
     }
 
     fn get_perimeter(triangle: &Triangle) -> u32 {
-        let (a, b, c) = triangle.sides;
+        let Triangle(a, b, c) = triangle;
         a + b + c
     }
 
-    fn set_cat(triangle: &mut Triangle) {
-        let (a, b, c) = triangle.sides;
-        triangle.category = if a == b && b == c {
+    fn get_cat(triangle: &Triangle) -> TriangleCategory {
+        let Triangle(a, b, c) = triangle;
+        if a == b && b == c {
             TriangleCategory::Equilateral
         } else if a == b || b == c || a == c {
             let (eq, uneq) = if a == b {
@@ -132,13 +138,14 @@ fn geometry() {
             } else {
                 (c, b)
             };
-            TriangleCategory::Isosceles(eq, uneq)
+            TriangleCategory::Isosceles(*eq, *uneq)
         } else {
             TriangleCategory::Scalene
         }
     }
 
-    fn read_input_sides(triangle: &mut Triangle) {
+    fn read_input_sides() -> Triangle {
+        let mut triangle = Triangle(0, 0, 0);
         loop {
             println!("Enter your triangle side");
             let mut input = String::new();
@@ -149,16 +156,16 @@ fn geometry() {
                 Ok(num) => num,
                 Err(_) => continue,
             };
-            let (a, b, c) = triangle.sides;
-            triangle.sides = if a == 0 {
-                (input, b, c)
+            let Triangle(a, b, c) = triangle;
+            triangle = if a == 0 {
+                Triangle(input, b, c)
             } else if b == 0 {
-                (a, input, c)
+                Triangle(a, input, c)
             } else {
-                (a, b, input)
+                Triangle(a, b, input)
             };
-            if triangle.sides.0 != 0 && triangle.sides.1 != 0 && triangle.sides.2 != 0 {
-                break;
+            if triangle.0 != 0 && triangle.1 != 0 && triangle.2 != 0 {
+                break triangle;
             }
         }
     }
