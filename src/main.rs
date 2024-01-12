@@ -9,10 +9,11 @@ use std::{
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     println!("{:?}", args);
-    const PROGRAMS: [&str; 2] = ["guess_game", "geometry"];
+    const PROGRAMS: [&str; 3] = ["guess_number", "guess_word", "geometry"];
     let program = args.last().expect("Infussient arguments").as_str();
     match program {
-        "guess_game" => guess_game::guess_number(),
+        "guess_number" => guess_game::guess_number(),
+        "guess_word" => guess_game::guess_word(),
         "geometry" => geometry::geometry(),
         _ => {
             println!(
