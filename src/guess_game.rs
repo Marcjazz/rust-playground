@@ -1,6 +1,10 @@
-use std::fmt::Write;
-
 use super::*;
+use std::{
+    env,
+    fmt::Write,
+    fs::File,
+    io::{self, BufRead, BufReader},
+};
 
 use rand::thread_rng as random;
 
@@ -33,69 +37,22 @@ pub fn guess_number() {
     }
 }
 
-const WORDS: [&str; 52] = [
-    "science",
-    "computer",
-    "technology",
-    "program",
-    "code",
-    "language",
-    "compiler",
-    "executable",
-    "development",
-    "build",
-    "deployment",
-    "maintainance",
-    "mouse",
-    "keyboard",
-    "screen",
-    "monitor",
-    "phone",
-    "mobile",
-    "automatic",
-    "programmable",
-    "cybersecurity",
-    "cybercriminality",
-    "hacker",
-    "software",
-    "hardware",
-    "virus",
-    "anti-virus",
-    "firewall",
-    "artificial",
-    "intelligence",
-    "robot",
-    "machine",
-    "learning",
-    "image",
-    "video",
-    "audio",
-    "memory",
-    "processor",
-    "energy",
-    "capacity",
-    "bookmark",
-    "browser",
-    "navigator",
-    "website",
-    "internet",
-    "network",
-    "communication",
-    "client",
-    "server",
-    "deprecated",
-    "blockchain",
-    "e-commerce",
-];
-
 pub fn guess_word() {
-    let secret_number = random().gen_range(0..WORDS.len());
-    let secret_word = WORDS[secret_number];
+    let mut words: Vec<String> = Vec::new();
+    load_words(&mut words);
+    let secret_index = random().gen_range(0..words.len());
+    let secret_word = match words.get(secret_index) {
+        Some(word) => word,
+        None => {
+            eprintln!("Secret index out of bound {} ", secret_index);
+            return;
+        }
+    };
     let word_length = secret_word.len();
     println!(
         "{}",
         format!(
-            "Guess the word !! \n Hint: The word starts with `{}` and has a length of {}",
+            "Guess the word !! \n Note: The secret word is related to software engineering \n> Hint: it starts with `{}` and has a length of {}",
             secret_word.chars().nth(0).unwrap(),
             word_length
         )
@@ -177,6 +134,27 @@ fn stop_game() -> bool {
             break false;
         } else {
             println!("Wrong option !!! ")
+        }
+    }
+}
+
+fn load_words(words: &mut Vec<String>) {
+    let current_dir = env::current_dir().expect("Failed to get current directory");
+    let dictionary_path = current_dir.join("dictionary.txt");
+    // Open the file in read-only mode
+    let file = File::open(dictionary_path).expect("Failed to load dictionary.");
+
+    // Create a buffered reader to read the file line by line
+    let reader = BufReader::new(file);
+
+    // Iterate over the lines in the file
+    for line in reader.lines() {
+        // Handle each line as needed (here, we print it)
+        match line {
+            Ok(word) => words.push(word),
+            Err(_) => {
+                println!("{}", "Failed to read line.".red())
+            }
         }
     }
 }
