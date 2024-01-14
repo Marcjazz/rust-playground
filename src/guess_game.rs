@@ -1,7 +1,6 @@
 use super::*;
 use std::{
     env,
-    fmt::Write,
     fs::File,
     io::{self, BufRead, BufReader},
 };
@@ -112,9 +111,8 @@ pub fn guess_word() {
 
 fn get_hint_str(secret_word: &str, hints: &[usize]) -> String {
     let mut hint_str = String::new();
-
     for (i, char) in secret_word.char_indices() {
-        let _ = hint_str.write_char(if hints.contains(&i) { char } else { '_' });
+        let _ = hint_str.push(if hints.contains(&i) { char } else { '_' });
     }
 
     hint_str
